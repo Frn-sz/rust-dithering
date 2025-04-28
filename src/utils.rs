@@ -2,9 +2,9 @@ use std::path::PathBuf;
 
 use image::{Rgb, RgbImage};
 
-pub fn quantify(channel: &mut Vec<Vec<u8>>, x: usize, y: usize) -> i16 {
+pub fn quantify(channel: &mut Vec<Vec<u8>>, x: usize, y: usize, palette: &Vec<u8>) -> i16 {
     let old = channel[y][x] as i16;
-    let new = if old > 127 { 255 } else { 0 };
+    let new = find_closest_color(palette, old as u8) as i16;
     channel[y][x] = new as u8;
 
     old - new
@@ -31,4 +31,22 @@ pub fn save_as_rgb(r: &Vec<Vec<u8>>, g: &Vec<Vec<u8>>, b: &Vec<Vec<u8>>, path: &
     }
 
     img.save(path).expect("Erro ao salvar imagem");
+}
+fn find_closest_color(palette: &Vec<u8>, value: u8) -> u8 {
+    if palette.is_empty() {
+        return 0;
+    }
+
+    let mut closest = palette[0];
+    let mut smallest_diff = (value as i16 - closest as i16).abs();
+
+    for &color in palette {
+        let diff = (value as i16 - color as i16).abs();
+        if diff < smallest_diff {
+            smallest_diff = diff;
+            closest = color;
+        }
+    }
+
+    closest
 }

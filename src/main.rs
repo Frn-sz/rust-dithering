@@ -9,15 +9,18 @@ use utils::{quantify, saturating_add, save_as_rgb};
 //Struct de argumentos que serão parseados pela clap
 #[derive(Parser, Debug)]
 struct Args {
-    /// Caminho para a imagem
+    // Caminho para a imagem
     #[arg(short, long)]
     image: PathBuf,
 
     #[arg(short, long)]
     save: PathBuf,
-    /// Boolean para indicar se o programa deve ou não converter a imagem para escala de cinza
+    // Boolean para indicar se o programa deve ou não converter a imagem para escala de cinza
     #[arg(short, long, default_value_t = false)]
     gray: bool,
+
+    #[arg(short, long, default_value_t = 2)]
+    palette: usize,
 }
 
 fn main() -> Result<(), anyhow::Error> {
@@ -30,12 +33,15 @@ fn main() -> Result<(), anyhow::Error> {
     //Abrindo a imagem
     let mut img = ImageReader::open(args.image)?.decode()?;
 
+    //Gerando a paleta de cores de acordo com o parâmetro da CLI
+    let palette = gen_palette(args.palette);
+
     //Verificando se precisamos aplicar algoritmo com cores ou para escala de cinza
     if args.gray {
         img = img.grayscale();
     }
 
-    dither(img, &args.save);
+    dither(img, &args.save, palette);
 
     // Calcula o tempo decorrido
     let duration: std::time::Duration = start.elapsed();
@@ -45,7 +51,23 @@ fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-fn dither(img: DynamicImage, path_to_save: &PathBuf) {
+fn gen_palette(size: usize) -> Vec<u8> {
+    if size == 0 {
+        return vec![];
+    }
+    if size == 1 {
+        return vec![0];
+    }
+
+    let mut palette = Vec::with_capacity(size);
+    for i in 0..size {
+        let value = ((i as u32 * 255) / (size as u32 - 1)) as u8;
+        palette.push(value);
+    }
+    palette
+}
+
+fn dither(img: DynamicImage, path_to_save: &PathBuf, palette: Vec<u8>) {
     //Pegando as dimensões da imagem aberta
     let (width, height) = img.dimensions();
 
@@ -67,7 +89,13 @@ fn dither(img: DynamicImage, path_to_save: &PathBuf) {
         }
     }
 
-    floyd_steinberg(&mut r_channel, &mut g_channel, &mut b_channel, path_to_save);
+    floyd_steinberg(
+        &mut r_channel,
+        &mut g_channel,
+        &mut b_channel,
+        path_to_save,
+        palette,
+    );
 }
 
 fn floyd_steinberg(
@@ -75,6 +103,7 @@ fn floyd_steinberg(
     g: &mut Vec<Vec<u8>>,
     b: &mut Vec<Vec<u8>>,
     path_to_save: &PathBuf,
+    palette: Vec<u8>,
 ) {
     //Pegando dimensões da imagem
     let height = r.len();
@@ -84,9 +113,9 @@ fn floyd_steinberg(
     for y in 0..height {
         for x in 0..width {
             //Quantizando canais e pegando erro de cada pixel
-            let error_r = quantify(r, x, y);
-            let error_g = quantify(g, x, y);
-            let error_b = quantify(b, x, y);
+            let error_r = quantify(r, x, y, &palette);
+            let error_g = quantify(g, x, y, &palette);
+            let error_b = quantify(b, x, y, &palette);
 
             // Espalhar erro para os vizinhos
             if x + 1 < width {
