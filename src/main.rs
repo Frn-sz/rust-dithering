@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use std::time::Instant;
 use utils::{quantize, saturating_add, save_as_rgb};
 
+type RgbChannels = (Vec<Vec<u8>>, Vec<Vec<u8>>, Vec<Vec<u8>>);
 //Struct de argumentos que serão parseados pela clap
 #[derive(Parser, Debug)]
 struct Args {
@@ -17,7 +18,7 @@ struct Args {
     #[arg(short, long)]
     save: PathBuf,
 
-    // Boolean para indicar se o programa deve ou não converter a imagem para escala de cinza
+    // Boolean para indicar se o programa deve converter a imagem para escala de cinza
     #[arg(short, long, default_value_t = false)]
     gray: bool,
 
@@ -44,8 +45,12 @@ fn main() -> Result<(), anyhow::Error> {
         img = img.grayscale();
     }
 
-    //Aplica algoritmo de ditherização
-    dither(img, &args.save, palette);
+    let (width, height) = img.dimensions();
+
+    //Aplica algoritmo de ditherização e salva os canais retornados
+    let (r, g, b) = dither(img, palette);
+
+    save_as_rgb(&r, &g, &b, height as usize, width as usize, &args.save);
 
     // Calcula o tempo decorrido
     let duration: std::time::Duration = start.elapsed();
@@ -74,7 +79,7 @@ fn gen_palette(size: usize) -> Vec<u8> {
     palette
 }
 
-fn dither(img: DynamicImage, path_to_save: &PathBuf, palette: Vec<u8>) {
+fn dither(img: DynamicImage, palette: Vec<u8>) -> RgbChannels {
     //Pegando as dimensões da imagem aberta
     let (width, height) = img.dimensions();
 
@@ -105,9 +110,8 @@ fn dither(img: DynamicImage, path_to_save: &PathBuf, palette: Vec<u8>) {
         &mut b_channel,
         height as usize,
         width as usize,
-        path_to_save,
         palette,
-    );
+    )
 }
 
 fn floyd_steinberg(
@@ -116,9 +120,8 @@ fn floyd_steinberg(
     b: &mut Vec<Vec<u8>>,
     height: usize,
     width: usize,
-    path_to_save: &PathBuf,
     palette: Vec<u8>,
-) {
+) -> RgbChannels {
     //Percorrendo a matriz dos canais para aplicar o algoritmo
     for y in 0..height {
         for x in 0..width {
@@ -157,6 +160,5 @@ fn floyd_steinberg(
         }
     }
 
-    //Salva a imagem de saída
-    save_as_rgb(r, g, b, height, width, path_to_save);
+    (r.to_vec(), g.to_vec(), b.to_vec())
 }
