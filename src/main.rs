@@ -39,7 +39,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     //Gerando a paleta de cores de acordo com o parâmetro da CLI
     let palette = gen_palette(args.palette);
-
+    println!("{:?}", palette);
     //Verifica se é necessário converter a imagem para cinza
     if args.gray {
         img = img.grayscale();

@@ -38,3 +38,28 @@ Após a main, temos a declaração das funções auxíliares:
 - `saturing_add`: realiza uma adição e limita os valores onde a soma passa de 255 ou fica menor que 0;
 - `save_as_rgb`: cria uma nova imagem do mesmo tamanho, percorre os canais colocando os valores nos pixels e salva a imagem no caminho de saída;
 - `find_closest_color`: vai encontrar a cor mais próxima de cada pixel, de acordo com as cores na paleta.
+
+## Como executar o program
+
+Com o `cargo` já instalado, basta executar o seguinte comando no terminal
+
+*: `--release` é uma flag para executar uma build de release mais otimizida.
+**: Todos os argumentos para o programa devem ser passados depois do `--` 
+
+```bash
+cargo run --release -- -i <Caminho da imagem> -s <Caminho de saída>
+```
+
+Existem também 2 argumentos opcionais, são eles:
+
+- `-g`: Com essa flag, o programa converte a imagem da entrada para escala de cinza antes de aplicar o algoritmo.
+- `-p <Tamanho da paleta>`: Com essa flag, é possível aumentar o tamanho da paleta de cores (e.g 2 = [0,255], 3 = [0,127,255], 4 = [0,85,170,255])
+
+Todas as flags tem seus tamanhos curtos e longos
+
+- `-i` ou `--image`
+- `-s` ou `--save`
+- `-p` ou `--palette`
+- `-g` ou `--gray`
+
+É possível utilizar `--help` ou `-h` para um exemplo de uso dos argumentos do programa
