@@ -15,7 +15,7 @@ Primeiramente criamos uma struct para parsear os argumentos do terminal usando o
 - _gray_: indica de o programa deve converter a imagem para escala de cinza;
 - _palette_: é o tamanho da paleta de cores, quanto maior for a paleta, menor é o intervalo entre cada cor. Por padrão é utilizado 2 (0,255).
 
-Em seguida, temos a main que vai receber os argumentos do terminal, abrir a imagem, gerar a paleta de cores, converte (se necessário) a imagem para escala de cinza, aplica o algoritmo de ditherização, calcula e imprime o tempo de execução.
+Em seguida, temos a main que vai receber os argumentos do terminal, abrir a imagem, gerar a paleta de cores, converte (se necessário) a imagem para escala de cinza, aplica o algoritmo de ditherização, salva os canais ditherizados, calcula e imprime o tempo de execução.
 
 Após a main, temos algumas funções:
 
@@ -26,5 +26,10 @@ Após a main, temos algumas funções:
   - soma 3/16 do erro no pixel da diagonal inferior esquerda;
   - soma 5/16 do erro no pixel abaixo;
   - soma 1/16 do erro no pixel da diagonal inferior direita.
-- \*\*
-- \*\*
+
+## Funções do arquivo utils.rs
+
+- _quantize_: pega o valor da cor original do pixel e acha a cor mais próxima na paleta;
+- _saturing_add_: limita os valores onde a soma passa de 255 ou fica menor que 0;
+- _save_as_rgb_: cria uma nova imagem do mesmo tamanho, percorre os canais colocando os valores nos pixels e salva a imagem no caminho de saída;
+- _find_closest_color_: vai encontrar a cor mais próxima de cada pixel, de acordo com o tamanho da paleta.
