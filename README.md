@@ -43,8 +43,9 @@ Após a main, temos a declaração das funções auxíliares:
 
 Com o `cargo` já instalado, basta executar o seguinte comando no terminal
 
-*: `--release` é uma flag para executar uma build de release mais otimizida.
-**: Todos os argumentos para o programa devem ser passados depois do `--` 
+**`--release` é uma flag para executar uma build de release mais otimizida.**
+
+**Todos os argumentos para o programa devem ser passados depois do `- -`**
 
 ```bash
 cargo run --release -- -i <Caminho da imagem> -s <Caminho de saída>
